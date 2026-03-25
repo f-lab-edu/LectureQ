@@ -40,6 +40,13 @@ dependencies:
   # Networking
   dio: ^5.9.2
 
+  # Serialization
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # Network Utils
+  connectivity_plus: ^6.1.4
+
   # Routing
   go_router: ^17.1.0
 
@@ -56,6 +63,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   riverpod_generator: ^4.0.3
   build_runner: ^2.13.1
+  freezed: ^3.0.6
+  json_serializable: ^6.9.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
