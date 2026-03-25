@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_theme.dart';
+import 'router.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -11,14 +12,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'LectureQ',
       theme: AppTheme.lightTheme,
-      home: const Scaffold(
-        body: Center(
-          child: Text('LectureQ'),
-        ),
-      ),
+      routerConfig: router,
     );
   }
 }
