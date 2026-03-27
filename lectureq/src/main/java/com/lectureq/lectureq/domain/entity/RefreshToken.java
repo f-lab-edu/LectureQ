@@ -19,7 +19,7 @@ public class RefreshToken {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -34,6 +34,11 @@ public class RefreshToken {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void update(String token, LocalDateTime expiresAt) {
+        this.token = token;
+        this.expiresAt = expiresAt;
     }
 
     @Builder
