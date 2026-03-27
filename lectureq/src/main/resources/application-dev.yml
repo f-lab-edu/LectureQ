@@ -14,3 +14,8 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret: lectureq-dev-secret-key-must-be-at-least-256-bits-long-for-hs256
+  access-expiration: 3600000
+  refresh-expiration: 2592000000
