@@ -65,4 +65,12 @@ public class TestFixture {
                 .expiresAt(LocalDateTime.now().plusDays(7))
                 .build();
     }
+
+    public static RefreshToken createRefreshToken(User user, String token, LocalDateTime expiresAt) {
+        return RefreshToken.builder()
+                .user(user)
+                .token(token)
+                .expiresAt(expiresAt)
+                .build();
+    }
 }
