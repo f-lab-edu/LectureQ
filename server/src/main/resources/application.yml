@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: lectureq
+  profiles:
+    active: local
