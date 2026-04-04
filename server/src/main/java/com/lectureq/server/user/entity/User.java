@@ -23,17 +23,13 @@ public class User extends BaseEntity {
     @Column(length = 50)
     private String nickname;
 
-    @Column(length = 100)
-    private String email;
-
     @Column(columnDefinition = "TEXT")
     private String profileImage;
 
     @Builder
-    public User(String kakaoId, String nickname, String email, String profileImage) {
+    public User(String kakaoId, String nickname, String profileImage) {
         this.kakaoId = kakaoId;
         this.nickname = nickname;
-        this.email = email;
         this.profileImage = profileImage;
     }
 }
