@@ -2,7 +2,6 @@ CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     kakao_id VARCHAR(50) NOT NULL UNIQUE,
     nickname VARCHAR(50),
-    email VARCHAR(100),
     profile_image TEXT,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
