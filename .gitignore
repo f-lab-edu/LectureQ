@@ -347,3 +347,6 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,java,intellij+all,react,gradle,node
+
+# Local config with secrets
+application-local.yml
