@@ -34,6 +34,9 @@ class GlobalExceptionHandlerTest {
     @MockitoBean
     private AuthService authService;
 
+    @MockitoBean
+    private com.lectureq.server.global.jwt.JwtProvider jwtProvider;
+
     @Test
     void businessException_default_message() throws Exception {
         mockMvc.perform(get("/test/business-default"))
