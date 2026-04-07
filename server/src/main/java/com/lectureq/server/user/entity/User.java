@@ -26,6 +26,11 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String profileImage;
 
+    public void updateProfile(String nickname, String profileImage) {
+        this.nickname = nickname;
+        this.profileImage = profileImage;
+    }
+
     @Builder
     public User(String kakaoId, String nickname, String profileImage) {
         this.kakaoId = kakaoId;
