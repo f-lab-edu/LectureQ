@@ -12,3 +12,6 @@ spring:
 logging:
   level:
     com.lectureq: INFO
+
+cookie:
+  secure: true

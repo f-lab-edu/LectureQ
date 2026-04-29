@@ -11,3 +11,16 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+jwt:
+  secret: dGVzdC1zZWNyZXQta2V5LW11c3QtYmUtYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==
+  access-expiration: 1800000
+  refresh-expiration: 1209600000
+
+cookie:
+  secure: false
+
+kakao:
+  client-id: test-client-id
+  client-secret: test-client-secret
+  redirect-uri: http://localhost:3000/oauth/callback
