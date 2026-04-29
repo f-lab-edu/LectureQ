@@ -136,9 +136,13 @@ class AuthControllerTest {
 
     @Test
     void 로그아웃_성공() throws Exception {
+        // given
+        given(jwtProvider.validateToken("valid-access")).willReturn(true);
+        given(jwtProvider.getUserId("valid-access")).willReturn(1L);
+
         // when & then
         mockMvc.perform(post("/api/v1/auth/logout")
-                        .cookie(new jakarta.servlet.http.Cookie("refreshToken", "some-token")))
+                        .cookie(new jakarta.servlet.http.Cookie("accessToken", "valid-access")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("로그아웃 성공"))
@@ -154,5 +158,12 @@ class AuthControllerTest {
                             .findFirst().orElseThrow();
                     assertThat(refreshCookie).contains("Max-Age=0");
                 });
+    }
+
+    @Test
+    void 로그아웃_인증없이_401() throws Exception {
+        // when & then (access token 없이 요청)
+        mockMvc.perform(post("/api/v1/auth/logout"))
+                .andExpect(status().isUnauthorized());
     }
 }

@@ -77,7 +77,7 @@ public class AuthService {
 
     @Transactional
     public RefreshResult refresh(String refreshToken) {
-        // 1. 토큰 유효성 검증
+        // 1. 토큰 유효성 검증 (서명/형식)
         if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
         }
@@ -86,19 +86,25 @@ public class AuthService {
         RefreshToken storedToken = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "Refresh Token이 만료되었습니다. 다시 로그인해주세요."));
 
-        // 3. 기존 Refresh Token 삭제 (Token Rotation)
+        // 3. DB에 저장된 만료 시각 검증 (서버 측 강제 무효화 정책 지원)
+        if (storedToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(storedToken);
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
+        }
+
+        // 4. 기존 Refresh Token 삭제 (Token Rotation)
         refreshTokenRepository.delete(storedToken);
 
-        // 4. 새 토큰 쌍 생성
+        // 5. 새 토큰 쌍 생성
         Long userId = storedToken.getUser().getId();
         String newAccessToken = jwtProvider.createAccessToken(userId);
         String newRefreshToken = jwtProvider.createRefreshToken(userId);
 
-        // 5. 새 Refresh Token 저장
+        // 6. 새 Refresh Token 저장
         refreshTokenRepository.save(RefreshToken.builder()
                 .user(storedToken.getUser())
                 .token(newRefreshToken)
-                .expiredAt(LocalDateTime.now().plusDays(14))
+                .expiredAt(LocalDateTime.now().plusNanos(refreshTokenExpirationMs * 1_000_000))
                 .build());
 
         return new RefreshResult(newAccessToken, newRefreshToken);
@@ -107,10 +113,8 @@ public class AuthService {
     public record RefreshResult(String accessToken, String refreshToken) {}
 
     @Transactional
-    public void logout(String refreshToken) {
-        if (refreshToken != null) {
-            refreshTokenRepository.findByToken(refreshToken)
-                    .ifPresent(refreshTokenRepository::delete);
-        }
+    public void logout(Long userId) {
+        userRepository.findById(userId)
+                .ifPresent(refreshTokenRepository::deleteByUser);
     }
 }

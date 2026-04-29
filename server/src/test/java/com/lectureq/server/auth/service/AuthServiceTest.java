@@ -160,9 +160,9 @@ class AuthServiceTest {
     }
 
     @Test
-    void 로그아웃_성공() {
+    void 토큰_갱신_실패_DB_만료() {
         // given
-        String refreshToken = "refresh-token";
+        String expiredToken = "expired-refresh-token";
         User user = User.builder()
                 .kakaoId("12345")
                 .nickname("홍길동")
@@ -170,24 +170,47 @@ class AuthServiceTest {
                 .build();
         RefreshToken storedToken = RefreshToken.builder()
                 .user(user)
-                .token(refreshToken)
-                .expiredAt(LocalDateTime.now().plusDays(14))
+                .token(expiredToken)
+                .expiredAt(LocalDateTime.now().minusMinutes(1))
                 .build();
-        given(refreshTokenRepository.findByToken(refreshToken)).willReturn(Optional.of(storedToken));
 
-        // when
-        authService.logout(refreshToken);
+        given(jwtProvider.validateToken(expiredToken)).willReturn(true);
+        given(refreshTokenRepository.findByToken(expiredToken)).willReturn(Optional.of(storedToken));
 
-        // then
+        // when & then
+        assertThatThrownBy(() -> authService.refresh(expiredToken))
+                .isInstanceOf(BusinessException.class);
         verify(refreshTokenRepository).delete(storedToken);
     }
 
     @Test
-    void 로그아웃_토큰_없어도_성공() {
+    void 로그아웃_성공() {
+        // given
+        Long userId = 1L;
+        User user = User.builder()
+                .kakaoId("12345")
+                .nickname("홍길동")
+                .profileImage("https://profile.jpg")
+                .build();
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
         // when
-        authService.logout(null);
+        authService.logout(userId);
 
         // then
-        verify(refreshTokenRepository, never()).findByToken(any());
+        verify(refreshTokenRepository).deleteByUser(user);
+    }
+
+    @Test
+    void 로그아웃_탈퇴된_사용자() {
+        // given
+        Long userId = 999L;
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        // when
+        authService.logout(userId);
+
+        // then
+        verify(refreshTokenRepository, never()).deleteByUser(any());
     }
 }

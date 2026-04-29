@@ -57,9 +57,12 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void permitAll_경로는_토큰_없이_접근_가능() throws Exception {
-        int status = mockMvc.perform(post("/api/v1/auth/logout"))
+        int status = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType("application/json")
+                        .content("{\"code\": \"\"}"))
                 .andReturn().getResponse().getStatus();
 
+        // 인증 단에서는 막히지 않고, 검증 단에서 400 반환됨
         assertThat(status).isNotEqualTo(401);
     }
 }
