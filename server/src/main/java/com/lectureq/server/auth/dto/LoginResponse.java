@@ -16,6 +16,7 @@ public class LoginResponse {
     public static class UserInfo {
         private final Long id;
         private final String nickname;
+        /** 카카오 프로필 이미지 URL (kakao_account.profile.profile_image_url, base64 아님) */
         private final String profileImage;
 
         public UserInfo(User user) {

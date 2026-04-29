@@ -20,34 +20,53 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
+    private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String ACCESS_TOKEN_COOKIE_PATH = "/";
+    private static final String REFRESH_TOKEN_COOKIE_PATH = "/api/v1/auth";
+    private static final String COOKIE_SAME_SITE = "Lax";
+
     private final AuthService authService;
 
     @Value("${cookie.secure}")
     private boolean cookieSecure;
 
+    @Value("${jwt.access-expiration}")
+    private long accessTokenExpirationMs;
+
+    @Value("${jwt.refresh-expiration}")
+    private long refreshTokenExpirationMs;
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
         AuthService.LoginResult result = authService.login(request.getCode());
 
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", result.accessToken())
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(1800)
-                .build();
-
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", result.refreshToken())
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Lax")
-                .path("/api/v1/auth")
-                .maxAge(1209600)
-                .build();
+        ResponseCookie accessTokenCookie = buildAccessTokenCookie(result.accessToken());
+        ResponseCookie refreshTokenCookie = buildRefreshTokenCookie(result.refreshToken());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(ApiResponse.success("로그인 성공", result.loginResponse()));
+    }
+
+    private ResponseCookie buildAccessTokenCookie(String value) {
+        return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, value)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite(COOKIE_SAME_SITE)
+                .path(ACCESS_TOKEN_COOKIE_PATH)
+                .maxAge(accessTokenExpirationMs / 1000)
+                .build();
+    }
+
+    private ResponseCookie buildRefreshTokenCookie(String value) {
+        return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, value)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite(COOKIE_SAME_SITE)
+                .path(REFRESH_TOKEN_COOKIE_PATH)
+                .maxAge(refreshTokenExpirationMs / 1000)
+                .build();
     }
 }

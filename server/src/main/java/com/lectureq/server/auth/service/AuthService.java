@@ -10,10 +10,12 @@ import com.lectureq.server.global.jwt.JwtProvider;
 import com.lectureq.server.user.entity.User;
 import com.lectureq.server.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
+
+    @Value("${jwt.refresh-expiration}")
+    private long refreshTokenExpirationMs;
 
     @Transactional
     public LoginResult login(String code) {
@@ -34,18 +39,19 @@ public class AuthService {
 
         // 3. 회원 확인/가입
         String kakaoId = String.valueOf(userResponse.getId());
-        User user = userRepository.findByKakaoId(kakaoId)
-                .map(existingUser -> {
-                    existingUser.updateProfile(
-                            userResponse.getNickname(),
-                            userResponse.getProfileImageUrl());
-                    return existingUser;
-                })
-                .orElseGet(() -> userRepository.save(User.builder()
-                        .kakaoId(kakaoId)
-                        .nickname(userResponse.getNickname())
-                        .profileImage(userResponse.getProfileImageUrl())
-                        .build()));
+        Optional<User> existing = userRepository.findByKakaoId(kakaoId);
+
+        User user;
+        if (existing.isPresent()) {
+            user = existing.get();
+            user.updateProfile(userResponse.getNickname(), userResponse.getProfileImageUrl());
+        } else {
+            user = userRepository.save(User.builder()
+                    .kakaoId(kakaoId)
+                    .nickname(userResponse.getNickname())
+                    .profileImage(userResponse.getProfileImageUrl())
+                    .build());
+        }
 
         // 4. 기존 RefreshToken 삭제
         refreshTokenRepository.deleteByUser(user);
@@ -58,7 +64,7 @@ public class AuthService {
         refreshTokenRepository.save(RefreshToken.builder()
                 .user(user)
                 .token(refreshToken)
-                .expiredAt(LocalDateTime.now().plusDays(14))
+                .expiredAt(LocalDateTime.now().plusNanos(refreshTokenExpirationMs * 1_000_000))
                 .build());
 
         // 8. 응답

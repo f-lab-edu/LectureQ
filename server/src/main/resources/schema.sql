@@ -7,7 +7,7 @@ CREATE TABLE users (
     updated_at DATETIME NOT NULL
 );
 
-CREATE TABLE recording (
+CREATE TABLE recordings (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     title VARCHAR(100) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE recording (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE analysis (
+CREATE TABLE analyses (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     recording_id BIGINT NOT NULL UNIQUE,
     status VARCHAR(20) NOT NULL,
@@ -28,23 +28,24 @@ CREATE TABLE analysis (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     completed_at DATETIME,
-    FOREIGN KEY (recording_id) REFERENCES recording(id) ON DELETE CASCADE
+    FOREIGN KEY (recording_id) REFERENCES recordings(id) ON DELETE CASCADE
 );
 
-CREATE TABLE question (
+CREATE TABLE questions (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     analysis_id BIGINT NOT NULL,
     content TEXT NOT NULL,
     order_num INT NOT NULL,
     created_at DATETIME NOT NULL,
-    FOREIGN KEY (analysis_id) REFERENCES analysis(id) ON DELETE CASCADE
+    FOREIGN KEY (analysis_id) REFERENCES analyses(id) ON DELETE CASCADE
 );
 
-CREATE TABLE refresh_token (
+CREATE TABLE refresh_tokens (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    token TEXT NOT NULL,
+    token VARCHAR(500) NOT NULL,
     expired_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL,
+    INDEX idx_refresh_tokens_token (token),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
