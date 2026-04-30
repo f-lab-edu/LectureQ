@@ -46,8 +46,9 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void 만료된_토큰으로_보호된_API_접근_401() throws Exception {
-        JwtProvider shortLived = new JwtProvider(
-                "dGVzdC1zZWNyZXQta2V5LW11c3QtYmUtYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==", 0, 0);
+        JwtProvider shortLived = new JwtProvider(new JwtProperties(
+                "dGVzdC1zZWNyZXQta2V5LW11c3QtYmUtYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==", 0, 0));
+        shortLived.init();
         String expired = shortLived.createAccessToken(1L);
 
         mockMvc.perform(get("/api/v1/users/me")

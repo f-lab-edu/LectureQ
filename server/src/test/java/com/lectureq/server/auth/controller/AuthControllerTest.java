@@ -1,15 +1,19 @@
 package com.lectureq.server.auth.controller;
 
+import com.lectureq.server.auth.AuthCookieFactory;
+import com.lectureq.server.auth.config.CookieProperties;
 import com.lectureq.server.auth.dto.LoginResponse;
 import com.lectureq.server.auth.service.AuthService;
 import com.lectureq.server.global.config.SecurityConfig;
 import com.lectureq.server.global.error.GlobalExceptionHandler;
 import com.lectureq.server.global.jwt.JwtAuthenticationEntryPoint;
 import com.lectureq.server.global.jwt.JwtAuthenticationFilter;
+import com.lectureq.server.global.jwt.JwtProperties;
 import com.lectureq.server.global.jwt.JwtProvider;
 import com.lectureq.server.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -27,7 +31,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
-@Import({SecurityConfig.class, GlobalExceptionHandler.class, JwtAuthenticationFilter.class, JwtAuthenticationEntryPoint.class})
+@Import({SecurityConfig.class, GlobalExceptionHandler.class, JwtAuthenticationFilter.class, JwtAuthenticationEntryPoint.class, AuthCookieFactory.class})
+@EnableConfigurationProperties({CookieProperties.class, JwtProperties.class})
 class AuthControllerTest {
 
     @Autowired

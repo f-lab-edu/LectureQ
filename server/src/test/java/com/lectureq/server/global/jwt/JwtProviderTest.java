@@ -7,12 +7,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JwtProviderTest {
 
+    private static final String SECRET = "dGVzdC1zZWNyZXQta2V5LW11c3QtYmUtYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==";
+
     private JwtProvider jwtProvider;
 
     @BeforeEach
     void setUp() {
-        String secret = "dGVzdC1zZWNyZXQta2V5LW11c3QtYmUtYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==";
-        jwtProvider = new JwtProvider(secret, 1800000, 1209600000);
+        jwtProvider = createProvider(1800000, 1209600000);
+    }
+
+    private JwtProvider createProvider(long accessExpiration, long refreshExpiration) {
+        JwtProvider provider = new JwtProvider(new JwtProperties(SECRET, accessExpiration, refreshExpiration));
+        provider.init();
+        return provider;
     }
 
     @Test
@@ -23,8 +30,7 @@ class JwtProviderTest {
 
     @Test
     void 만료된_토큰_검증_실패() {
-        JwtProvider shortLived = new JwtProvider(
-                "dGVzdC1zZWNyZXQta2V5LW11c3QtYmUtYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==", 0, 0);
+        JwtProvider shortLived = createProvider(0, 0);
         String token = shortLived.createAccessToken(1L);
         assertThat(jwtProvider.validateToken(token)).isFalse();
     }

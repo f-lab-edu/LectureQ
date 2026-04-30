@@ -6,12 +6,13 @@ import com.lectureq.server.global.error.BusinessException;
 import com.lectureq.server.global.infra.kakao.KakaoClient;
 import com.lectureq.server.global.infra.kakao.KakaoTokenResponse;
 import com.lectureq.server.global.infra.kakao.KakaoUserResponse;
+import com.lectureq.server.global.jwt.JwtProperties;
 import com.lectureq.server.global.jwt.JwtProvider;
 import com.lectureq.server.user.entity.User;
 import com.lectureq.server.user.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,7 +29,6 @@ import static org.mockito.Mockito.never;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @InjectMocks
     private AuthService authService;
 
     @Mock
@@ -48,6 +48,12 @@ class AuthServiceTest {
 
     @Mock
     private KakaoUserResponse kakaoUserResponse;
+
+    @BeforeEach
+    void setUp() {
+        JwtProperties jwtProperties = new JwtProperties("secret", 1800000L, 1209600000L);
+        authService = new AuthService(kakaoClient, userRepository, refreshTokenRepository, jwtProvider, jwtProperties);
+    }
 
     @Test
     void 신규_사용자_로그인_성공() {
@@ -101,7 +107,7 @@ class AuthServiceTest {
         given(refreshTokenRepository.save(any(RefreshToken.class))).willReturn(null);
 
         // when
-        AuthService.LoginResult result = authService.login("test-code");
+        authService.login("test-code");
 
         // then
         assertThat(existingUser.getNickname()).isEqualTo("새닉네임");

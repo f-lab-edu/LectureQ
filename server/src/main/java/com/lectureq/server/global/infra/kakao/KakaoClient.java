@@ -2,7 +2,8 @@ package com.lectureq.server.global.infra.kakao;
 
 import com.lectureq.server.global.error.BusinessException;
 import com.lectureq.server.global.error.ErrorCode;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -15,23 +16,18 @@ import org.springframework.web.client.RestClientResponseException;
 import java.time.Duration;
 
 @Component
+@RequiredArgsConstructor
 public class KakaoClient {
 
-    private final RestClient restClient;
-    private final String clientId;
-    private final String clientSecret;
-    private final String redirectUri;
+    private final KakaoProperties properties;
 
-    public KakaoClient(
-            @Value("${kakao.client-id}") String clientId,
-            @Value("${kakao.client-secret}") String clientSecret,
-            @Value("${kakao.redirect-uri}") String redirectUri) {
+    private RestClient restClient;
+
+    @PostConstruct
+    void init() {
         this.restClient = RestClient.builder()
                 .requestFactory(clientHttpRequestFactory())
                 .build();
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.redirectUri = redirectUri;
     }
 
     private ClientHttpRequestFactory clientHttpRequestFactory() {
@@ -44,10 +40,10 @@ public class KakaoClient {
     public KakaoTokenResponse getToken(String code) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id", clientId);
-        params.add("redirect_uri", redirectUri);
+        params.add("client_id", properties.clientId());
+        params.add("redirect_uri", properties.redirectUri());
         params.add("code", code);
-        params.add("client_secret", clientSecret);
+        params.add("client_secret", properties.clientSecret());
 
         try {
             return restClient.post()

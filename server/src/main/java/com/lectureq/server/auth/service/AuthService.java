@@ -8,11 +8,11 @@ import com.lectureq.server.global.error.ErrorCode;
 import com.lectureq.server.global.infra.kakao.KakaoClient;
 import com.lectureq.server.global.infra.kakao.KakaoTokenResponse;
 import com.lectureq.server.global.infra.kakao.KakaoUserResponse;
+import com.lectureq.server.global.jwt.JwtProperties;
 import com.lectureq.server.global.jwt.JwtProvider;
 import com.lectureq.server.user.entity.User;
 import com.lectureq.server.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +27,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
-
-    @Value("${jwt.refresh-expiration}")
-    private long refreshTokenExpirationMs;
+    private final JwtProperties jwtProperties;
 
     @Transactional
     public LoginResult login(String code) {
@@ -66,7 +64,7 @@ public class AuthService {
         refreshTokenRepository.save(RefreshToken.builder()
                 .user(user)
                 .token(refreshToken)
-                .expiredAt(LocalDateTime.now().plusNanos(refreshTokenExpirationMs * 1_000_000))
+                .expiredAt(LocalDateTime.now().plusNanos(jwtProperties.refreshExpiration() * 1_000_000))
                 .build());
 
         // 8. 응답
@@ -104,7 +102,7 @@ public class AuthService {
         refreshTokenRepository.save(RefreshToken.builder()
                 .user(storedToken.getUser())
                 .token(newRefreshToken)
-                .expiredAt(LocalDateTime.now().plusNanos(refreshTokenExpirationMs * 1_000_000))
+                .expiredAt(LocalDateTime.now().plusNanos(jwtProperties.refreshExpiration() * 1_000_000))
                 .build());
 
         return new RefreshResult(newAccessToken, newRefreshToken);
