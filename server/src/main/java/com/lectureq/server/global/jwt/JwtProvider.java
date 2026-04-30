@@ -1,8 +1,10 @@
 package com.lectureq.server.global.jwt;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -10,27 +12,46 @@ import java.util.Base64;
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
-    private final SecretKey secretKey;
-    private final long accessExpiration;
-    private final long refreshExpiration;
+    private final JwtProperties properties;
 
-    public JwtProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-expiration}") long accessExpiration,
-            @Value("${jwt.refresh-expiration}") long refreshExpiration) {
-        this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
-        this.accessExpiration = accessExpiration;
-        this.refreshExpiration = refreshExpiration;
+    private SecretKey secretKey;
+
+    @PostConstruct
+    void init() {
+        this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(properties.secret()));
     }
 
     public String createAccessToken(Long userId) {
-        return createToken(userId, accessExpiration);
+        return createToken(userId, properties.accessExpiration());
     }
 
     public String createRefreshToken(Long userId) {
-        return createToken(userId, refreshExpiration);
+        return createToken(userId, properties.refreshExpiration());
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public Long getUserId(String token) {
+        String subject = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+        return Long.parseLong(subject);
     }
 
     private String createToken(Long userId, long expiration) {

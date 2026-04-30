@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@WebMvcTest(controllers = GlobalExceptionHandlerTest.TestController.class)
 @Import({GlobalExceptionHandler.class, GlobalExceptionHandlerTest.TestController.class})
 @WithMockUser
 class GlobalExceptionHandlerTest {
@@ -33,6 +33,9 @@ class GlobalExceptionHandlerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private com.lectureq.server.global.jwt.JwtProvider jwtProvider;
 
     @Test
     void businessException_default_message() throws Exception {
